@@ -169,33 +169,19 @@ function App() {
         <button className="action" name="/" onClick={actionHandler}>
           &divide;
         </button>
-        <button onKeyUp={numClickHandler} onClick={numClickHandler}>
-          7
-        </button>
-        <button onKeyUp={numClickHandler} onClick={numClickHandler}>
-          8
-        </button>
-        <button onKeyUp={numClickHandler} onClick={numClickHandler}>
-          9
-        </button>
+        <button onClick={numClickHandler}>7</button>
+        <button onClick={numClickHandler}>8</button>
+        <button onClick={numClickHandler}>9</button>
         <button className="action" name="*" onClick={actionHandler}>
           &times;
         </button>
-        <button onKeyUp={numClickHandler} onClick={numClickHandler}>
-          4
-        </button>
-        <button onKeyUp={numClickHandler} onClick={numClickHandler}>
-          5
-        </button>
-        <button onKeyUp={numClickHandler} onClick={numClickHandler}>
-          6
-        </button>
+        <button onClick={numClickHandler}>4</button>
+        <button onClick={numClickHandler}>5</button>
+        <button onClick={numClickHandler}>6</button>
         <button className="action" name="-" onClick={actionHandler}>
           -
         </button>
-        <button onKeyUp={numClickHandler} onClick={numClickHandler}>
-          1
-        </button>
+        <button onClick={numClickHandler}>1</button>
         <button onKeyUp={numClickHandler} onClick={numClickHandler}>
           2
         </button>

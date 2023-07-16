@@ -1,45 +1,42 @@
 import { useEffect, useState } from "react";
 import "./App.css";
 
-// 4 * 25
-// [4, '*', 25] - O(n)
-
-//
-
-/**
- * newExp: 4
- *
- * i=1
- * newExp=""
- * temp1=4
- * j=2
- * i=2
- * temp2=25
- * newExp = 100
- */
-//
-
-// 2+2
+//This function takes an expression as a string and performs the calculation and return the result of an expression for exp : '45+3*9' returns 72
 function calc(exp) {
-  const operands = ["-", "+", "*", "/"];
-  if (exp.length === 1) return +exp;
+  if (+exp >= 0 || +exp < 0) return exp; // Return the exp as it is, if there are no operators
+  const operators = ["-", "+", "*", "/"];
   let lastIndex = 0;
   let j = 0;
   let newExp = "";
-
+  let noOperator = true;
   for (let i = 0; i < exp.length; i++) {
+    //this for loop performs all the multiplications and divisions in an expression and creates a  newExp which contains +/- only
     let temp1;
     let temp2;
-    const val = exp.at(i);
+    let val = exp.at(i);
     if (val === "*" || val === "/") {
       newExp = newExp.slice(0, lastIndex);
-      temp1 = exp.slice(j, i);
-      j = 1 + i++;
-      while (!operands.includes(exp.at(i)) && i < exp.length) i++;
-      temp2 = exp.slice(j, i--);
+      temp1 = +exp.slice(j, i);
+      while (true) {
+        j = ++i;
+        while (!operators.includes(exp.at(i)) && i < exp.length) i++;
+        temp2 = +exp.slice(j, i);
+        if (exp.at(i) === "*" || exp.at(i) === "/") {
+          if (val === "*") temp1 = temp1 * temp2;
+          else temp1 = temp1 / temp2;
+          val = exp.at(i);
+        } else break;
+      }
+      i--;
       if (val === "*") newExp = newExp + (temp1 * temp2 + "");
-      else newExp = newExp + (temp1 / temp2 + "");
+      else {
+        if (temp2 === 0) {
+          return "Infinity";
+        }
+        newExp = newExp + (temp1 / temp2 + "");
+      }
     } else if (val === "+" || val === "-") {
+      noOperator = false;
       newExp += val;
       j = i + 1;
       lastIndex = newExp.length;
@@ -47,23 +44,23 @@ function calc(exp) {
       newExp = newExp + (val + "");
     }
   }
+  if (noOperator) return newExp; // returning the newExp after performing multiplications and divisions to exp as there is no additions are no subtractions to be done
   let result = 0;
   j = 0;
-  let check = true;
+  noOperator = true; //reusing the same variable
   for (let i = 0; i < newExp.length; i++) {
     const val = newExp.at(i);
     if (val === "+" || val === "-") {
-      if (check) {
+      if (noOperator) {
         result = +newExp.slice(0, i) + result;
-        check = false;
+        noOperator = false;
       }
       j = 1 + i++;
-      while (!operands.includes(newExp.at(i)) && i < newExp.length) i++;
+      while (!operators.includes(newExp.at(i)) && i < newExp.length) i++;
       if (val === "+") result = +newExp.slice(j, i--) + result;
       else result = result - +newExp.slice(j, i--);
     }
   }
-  if (check) return exp;
   return result;
 }
 
@@ -73,19 +70,15 @@ function App() {
   const [advanceResult, setAdvancedResult] = useState("0");
 
   useEffect(() => {
-    try {
-      let exp = result;
-      if (actions.includes(result.at(-1))) exp = result.slice(0, -1);
-      if (exp === "") {
-        setResults("");
-        return;
-      }
-      console.log(exp);
-      let a = calc(exp);
-      console.log(a);
-      if (a + "" === "Infinity") setAdvancedResult("Cannot divide by 0");
-      else setAdvancedResult(a + "");
-    } catch {}
+    let exp = result;
+    if (actions.includes(result.at(-1))) exp = result.slice(0, -1);
+    if (exp === "") {
+      setResults("0");
+      return;
+    }
+    let a = calc(exp);
+    if (a + "" === "Infinity") setAdvancedResult("Can't divide by 0");
+    else setAdvancedResult(a + "");
   }, [result]);
 
   function clear() {
@@ -93,22 +86,23 @@ function App() {
   }
 
   function backspace() {
-    if (result === "Cannot divide by 0") return;
+    if (result === "Can't divide by 0") return;
     if (result.length === 1) setResults("0");
     else setResults(result.slice(0, -1));
   }
 
   function numClickHandler(e) {
-    if (result === "Cannot divide by 0") return;
+    if (result === "Can't divide by 0") return; //User should not be allowed when there is this error message as a result
     const val = e.target.innerText;
     if (val === "0") {
+      // prevent user from entering multiple 0's at start of the number
       if (result === "0") return;
       if (result.at(-1) === "0" && actions.includes(result.at(-2))) return;
     } else if (val === ".") {
       if (result.at(-1) === ".") return;
     } else {
       if (result === "0") {
-        setResults(val);
+        setResults(val); // overrides the 0 at the start of a number when a non zero is entered
         return;
       }
       if (result.at(-1) === "0" && actions.includes(result.at(-2))) {
@@ -120,10 +114,9 @@ function App() {
   }
 
   function actionHandler(e) {
-    if (result === "Infinity") return;
+    if (result === "Can't divide by 0") return;
     const val = e.target.name;
     if (actions.includes(result.at(-1))) {
-      //if (result.at(-1) === val) return;
       setResults(result.slice(0, -1).concat(val));
       return;
     }
@@ -131,28 +124,29 @@ function App() {
   }
 
   function resultHandler() {
-    try {
-      let exp = result;
-      if (actions.includes(result.at(-1))) exp = result.slice(0, -1);
-      if (exp === "") {
-        setResults("");
-        return;
-      }
-      let a = eval(exp);
-
-      if (a + "" === "Infinity") setResults("Cannot divide by 0");
-      else setResults(a + "");
-    } catch {
-      console.log("Seems there is an error in the input provided");
+    let exp = result;
+    if (actions.includes(result.at(-1))) exp = result.slice(0, -1);
+    if (exp === "") {
+      setResults("");
+      return;
     }
+    let a = calc(exp);
+    if (a + "" === "Infinity") setResults("Can't divide by 0");
+    else setResults(a + "");
   }
 
   return (
     <div className="calc">
       <form className="results">
-        <input id="result-input" type="text" value={result} />
+        <input
+          onChange={() => {}}
+          id="result-input"
+          type="text"
+          value={result}
+        />
         {result !== "0" && (
           <input
+            onChange={() => {}}
             id="advanced-result-input"
             type="text"
             value={`=${advanceResult}`}
@@ -182,11 +176,9 @@ function App() {
           -
         </button>
         <button onClick={numClickHandler}>1</button>
-        <button onKeyUp={numClickHandler} onClick={numClickHandler}>
-          2
-        </button>
+        <button onClick={numClickHandler}>2</button>
         <button
-          onKeyUp={(e) => {
+          onKeyDown={(e) => {
             console.log(e);
           }}
           onClick={numClickHandler}
@@ -204,9 +196,7 @@ function App() {
         >
           0
         </button>
-        <button onKeyUp={numClickHandler} onClick={numClickHandler}>
-          .
-        </button>
+        <button onClick={numClickHandler}>.</button>
         <button id="result" onClick={resultHandler}>
           =
         </button>

@@ -23,7 +23,10 @@ function calc(exp) {
         temp2 = +exp.slice(j, i);
         if (exp.at(i) === "*" || exp.at(i) === "/") {
           if (val === "*") temp1 = temp1 * temp2;
-          else temp1 = temp1 / temp2;
+          else {
+            if (temp2 === 0) return "Infinity";
+            temp1 = temp1 / temp2;
+          }
           val = exp.at(i);
         } else break;
       }
